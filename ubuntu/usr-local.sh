@@ -39,4 +39,3 @@ make_link_if share/man man
 make_link_if share/doc doc
 make_link_if share/info info
 cd $OLDPWD
-

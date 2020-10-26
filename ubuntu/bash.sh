@@ -10,4 +10,3 @@ sed -i -e 's/bobby/pure/g' ~/.bashrc
 sed -i -e 's/BASH_IT=.*$/BASH_IT=\"$HOME\/.bash_it\"/g' ~/.bashrc
 sudo cp -R ~/.bash_it /etc/skel/
 sudo cp ~/.bashrc /etc/skel/
-

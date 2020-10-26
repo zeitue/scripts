@@ -14,4 +14,3 @@ sudo snap set system refresh.retain=2
 
 # install the snap store
 sudo snap install snap-store
-

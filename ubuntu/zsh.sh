@@ -9,4 +9,3 @@ sed -i -e 's/ZSH=.*$/ZSH=\"$HOME\/.oh-my-zsh\"/g' ~/.zshrc
 sed -i -e 's/robbyrussell/pygmalion/g' ~/.zshrc
 sudo cp -R ~/.oh-my-zsh /etc/skel/
 sudo cp ~/.zshrc /etc/skel/
-

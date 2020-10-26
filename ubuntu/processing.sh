@@ -9,4 +9,3 @@ sudo sh /opt/processing/install.sh
 sudo ln -s /opt/processing/processing /usr/local/bin/
 sudo chown -R root:root /opt/processing
 rm "processing-${VERSION}-linux64.tgz"
-
