@@ -10,5 +10,5 @@ sudo rm microsoft.gpg
 
 # Install
 sudo apt update
-sudo apt install microsoft-edge-dev
+sudo apt install -y microsoft-edge-dev
 
