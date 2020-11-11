@@ -17,8 +17,13 @@ tar -xf nRF-Command-Line-Tools_*_Linux-amd64.tar.gz
 # Install
 sudo apt install -y ./*.deb
 
+# Cleanup
+cd ../
+rm -Rf nrf-cmd
+
+
 # Add icons and launchers
-sudo install resources/icons/jlink.png /usr/local/share/pixmaps
+sudo install ./resources/icons/jlink.png /usr/local/share/pixmaps
 
 for EXE in $(ls -1 /opt/SEGGER/JLink/*Exe);do
 echo $EXE;
@@ -39,7 +44,3 @@ StartupWMClass=$WMCLASS
 EOF
 done
 
-
-# Cleanup
-cd ../
-rm -Rf nrf-cmd
