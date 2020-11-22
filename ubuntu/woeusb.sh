@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# WoeUSB
+
+echo "Installing WoeUSB"
+
 # Add repository
 sudo add-apt-repository -y ppa:tomtomtom/woeusb
 

@@ -2,6 +2,8 @@
 
 # Snap
 
+echo "Installing Snap"
+
 # install the snapd daemon
 if [ -f "/etc/apt/preferences.d/nosnap.pref" ]; then
     sudo rm /etc/apt/preferences.d/nosnap.pref

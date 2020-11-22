@@ -1,7 +1,12 @@
 #!/bin/bash
 
 # Atom.io
-wget -qO - https://packagecloud.io/AtomEditor/atom/gpgkey | sudo apt-key add -
-sudo sh -c 'echo "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main" > /etc/apt/sources.list.d/atom.list'
-sudo apt-get update
+
+echo "Installing Atom"
+wget -qO - "https://packagecloud.io/AtomEditor/atom/gpgkey" |\
+    gpg --dearmor |\
+    sudo dd status=none of=/etc/apt/trusted.gpg.d/atom.gpg
+echo "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main" |\
+    sudo dd status=none of=/etc/apt/sources.list.d/atom.list
+sudo apt update
 sudo apt install -y atom

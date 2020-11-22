@@ -1,6 +1,9 @@
 #!/bin/bash
 
 # nRF Command Line Tools
+
+echo "Installing nRF Command Line Tools"
+
 URL="https://www.nordicsemi.com/-/media/Software-and-other-downloads/Desktop-software/nRF-command-line-tools/sw/Versions-10-x-x/10-11-1/nRFCommandLineTools10111Linuxamd64tar.gz"
 
 # Setup
@@ -26,10 +29,9 @@ rm -Rf nrf-cmd
 sudo install ./resources/icons/jlink.png /usr/local/share/pixmaps
 
 for EXE in $(ls -1 /opt/SEGGER/JLink/*Exe);do
-echo $EXE;
 WMCLASS=$(basename $EXE)
 NAME=${WMCLASS::-3}
-cat <<EOF | sudo tee "/usr/local/share/applications/${WMCLASS}.desktop"
+cat <<EOF | sudo dd status=none of="/usr/local/share/applications/${WMCLASS}.desktop"
 #!/usr/bin/env xdg-open
 [Desktop Entry]
 Name=$NAME

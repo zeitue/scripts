@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# /usr/local
+
+echo "Setting up /usr/local"
+
 function make_dir_if() {
     if [[ ! -d "$1" && ! -f "$1" ]]; then
         sudo mkdir -p "$1"

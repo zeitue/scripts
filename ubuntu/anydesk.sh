@@ -1,7 +1,12 @@
 #!/bin/bash
 
 # AnyDesk
-wget -qO - https://keys.anydesk.com/repos/DEB-GPG-KEY | sudo apt-key add -
-echo "deb http://deb.anydesk.com/ all main" | sudo tee /etc/apt/sources.list.d/anydesk-stable.list
+
+echo "Installing AnyDesk"
+wget -qO - "https://keys.anydesk.com/repos/DEB-GPG-KEY" |\
+    gpg --dearmor |\
+    sudo dd status=none of=/etc/apt/trusted.gpg.d/anydesk.gpg
+echo "deb http://deb.anydesk.com/ all main" |\
+    sudo dd status=none of=/etc/apt/sources.list.d/anydesk-stable.list
 sudo apt update
 sudo apt install -y anydesk

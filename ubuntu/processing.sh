@@ -2,6 +2,8 @@
 
 # Processing
 VERSION=3.5.4
+
+echo "Installing Processing ${VERSION}"
 wget "https://download.processing.org/processing-${VERSION}-linux64.tgz"
 tar -xf "processing-${VERSION}-linux64.tgz"
 sudo mv "processing-${VERSION}" /opt/processing

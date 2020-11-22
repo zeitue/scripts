@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# SSH
+
+echo "Installing SSH"
+
 # Install remote access via ssh
 sudo apt install -y openssh-server openssh-sftp-server sshfs
 
