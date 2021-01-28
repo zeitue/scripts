@@ -8,6 +8,7 @@ sudo apt install -y mono-complete xdotool
 
 wget -c https://firmware.ardupilot.org/Tools/MissionPlanner/MissionPlanner-stable.zip
 sudo unzip MissionPlanner-stable.zip -d /opt/MissionPlanner/
+rm ./MissionPlanner-stable.zip
 
 
 if [[ ! -d "/usr/local/share/applications" ]]; then
