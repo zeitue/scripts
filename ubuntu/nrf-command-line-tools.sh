@@ -4,7 +4,7 @@
 
 echo "Installing nRF Command Line Tools"
 
-URL="https://www.nordicsemi.com/-/media/Software-and-other-downloads/Desktop-software/nRF-command-line-tools/sw/Versions-10-x-x/10-11-1/nRFCommandLineTools10111Linuxamd64tar.gz"
+URL="https://www.nordicsemi.com/-/media/Software-and-other-downloads/Desktop-software/nRF-command-line-tools/sw/Versions-10-x-x/10-12-1/nRFCommandLineTools10121Linuxamd64.tar.gz"
 
 # Setup
 sudo mkdir -p /usr/local/share/applications
