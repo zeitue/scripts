@@ -42,6 +42,7 @@ sudo chown -R root:"$SHGROUP" /opt/Nordic
 # make sure user is a part of the group
 sudo usermod -a -G "$SHGROUP" $USER
 
+cd /opt/Nordic/SDK
 python3 -m venv "$SDK"
 cd "/opt/Nordic/SDKs/$SDK"
 source bin/activate
