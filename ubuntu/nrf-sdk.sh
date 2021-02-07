@@ -2,11 +2,18 @@
 
 # nRF SDK
 
-SDK="v1.4.2"
-NRFCONNECT_URL="https://www.nordicsemi.com/-/media/Software-and-other-downloads/Desktop-software/nRF-Connect-for-Desktop/3-6-1/nrfconnect361x8664.AppImage"
-GNUARMEMB_URL="https://developer.arm.com/-/media/Files/downloads/gnu-rm/8-2019q3/RC1.1/gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2"
-SEGGER_URL="https://segger.com/downloads/embedded-studio/embeddedstudio_arm_nordic_linux_x64"
-SHGROUP="users"
+export SDK="v1.4.2"
+export NRFCONNECT_URL="https://www.nordicsemi.com/-/media/Software-and-other-downloads/Desktop-software/nRF-Connect-for-Desktop/3-6-1/nrfconnect361x8664.AppImage"
+export GNUARMEMB_URL="https://developer.arm.com/-/media/Files/downloads/gnu-rm/8-2019q3/RC1.1/gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2"
+export SEGGER_URL="https://segger.com/downloads/embedded-studio/embeddedstudio_arm_nordic_linux_x64"
+export SHGROUP="users"
+
+if [[ ! -d /Applications ]]; then
+  sudo mkdir /Applications
+  sudo chmod 775 /Applications
+  sudo chown root:users /Applications
+fi
+
 wget -c "$NRFCONNECT_URL" -P /Applications/
 chmod +x /Applications/nrfconnect*.AppImage
 
@@ -42,7 +49,7 @@ sudo chown -R root:"$SHGROUP" /opt/Nordic
 # make sure user is a part of the group
 sudo usermod -a -G "$SHGROUP" $USER
 
-cd /opt/Nordic/SDK
+cd /opt/Nordic/SDKs
 python3 -m venv "$SDK"
 cd "/opt/Nordic/SDKs/$SDK"
 source bin/activate
