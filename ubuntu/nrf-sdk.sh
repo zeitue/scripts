@@ -54,8 +54,6 @@ python3 -m venv "$SDK"
 cd "/opt/Nordic/SDKs/$SDK"
 source bin/activate
 pip3 install west wheel
-mkdir ncs
-cd ncs
 west init -m https://github.com/nrfconnect/sdk-nrf
 west update
 west zephyr-export
