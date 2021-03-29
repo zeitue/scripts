@@ -26,6 +26,19 @@ if [ -e /usr/bin/nautilus ]; then
     nautilus-image-converter nautilus-sendto nautilus-gtkhash
 fi
 
+if [ -e /usr/bin/dolphin ]; then
+  echo "Installing Dolphin extensions"
+  sudo apt install -y dolphin-nextcloud\
+    dolphin-plugins ffmpegthumbs kio-gdrive
+fi
+
 # Thumbnailers
 echo "Installing thumbnailers"
-sudo apt install -y exe-thumbnailer ooo-thumbnailer ffmpegthumbnailer
+if [ -e /usr/bin/nautilus ] || [ -e /usr/bin/nemo ] || [ -e /usr/bin/caja ]; then
+  sudo apt install -y exe-thumbnailer ooo-thumbnailer ffmpegthumbnailer
+fi
+
+if [ -e /usr/bin/dolphin ]; then
+  sudo apt install -y kde-thumbnailer-deb kdesdk-thumbnailers kdegraphics-thumbnailers
+fi
+
