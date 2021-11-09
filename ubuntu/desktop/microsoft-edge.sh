@@ -15,5 +15,5 @@ echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" |\
 
 # Install
 sudo apt update
-sudo apt install -y microsoft-edge-dev
+sudo apt install -y microsoft-edge-stable
 
