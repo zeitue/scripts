@@ -2,13 +2,14 @@
 
 # Bash
 
-sudo apt install -y bash
+sudo apt install -y bash git wget
 
-# Bash-it
+# Oh My Bash
 
-git clone --depth=1 "https://github.com/Bash-it/bash-it.git" ~/.bash_it
-~/.bash_it/install.sh --silent
-sed -i -e 's/bobby/pure/g' ~/.bashrc
-sed -i -e 's/BASH_IT=.*$/BASH_IT=\"$HOME\/.bash_it\"/g' ~/.bashrc
-sudo cp -R ~/.bash_it /etc/skel/
+bash -c "$(wget https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh -O -)"
+
+sed -i -e 's/font/pure/g' ~/.bashrc
+sed -i -e 's/OSH=.*$/OSH=\"$HOME\/.oh-my-bash\"/g' ~/.bashrc
+sudo cp -R ~/.oh-my-bash /etc/skel/
 sudo cp ~/.bashrc /etc/skel/
+
