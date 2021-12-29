@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# /usr/local
-
-echo "Setting up /usr/local"
-
 function make_dir_if() {
     if [[ ! -d "$1" && ! -f "$1" ]]; then
         sudo mkdir -p "$1"
@@ -17,6 +13,10 @@ function make_link_if() {
     fi
 }
 
+echo "Installing Base system requirements"
+sudo apt install -y git curl wget apt-transport-https
+
+echo "Setting up /usr/local"
 # Setup /usr/local
 make_dir_if /usr/local
 make_dir_if /usr/local/bin
@@ -43,3 +43,4 @@ make_link_if share/man man
 make_link_if share/doc doc
 make_link_if share/info info
 cd $OLDPWD
+
