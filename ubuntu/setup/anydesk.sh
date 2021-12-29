@@ -10,3 +10,4 @@ echo "deb http://deb.anydesk.com/ all main" |\
     sudo dd status=none of=/etc/apt/sources.list.d/anydesk-stable.list
 sudo apt update
 sudo apt install -y anydesk
+

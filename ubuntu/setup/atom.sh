@@ -10,3 +10,4 @@ echo "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main" |\
     sudo dd status=none of=/etc/apt/sources.list.d/atom.list
 sudo apt update
 sudo apt install -y atom
+
