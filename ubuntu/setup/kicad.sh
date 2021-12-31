@@ -2,7 +2,7 @@
 
 # KiCad
 echo "Installing KiCad"
-VERSION=5.1
-sudo add-apt-repository -y "ppa:js-reynaud/kicad-${VERSION}"
+sudo add-apt-repository -y ppa:kicad/kicad-6.0-releases
 sudo apt update
 sudo apt install -y --install-recommends kicad
+
