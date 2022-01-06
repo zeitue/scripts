@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # VirtualBox
-VERSION=6.1
+VERSION=$(curl https://download.virtualbox.org/virtualbox/LATEST-STABLE.TXT)
 UBUNTU_VERSION=$(awk -F= '$1 == "UBUNTU_CODENAME" {gsub(/"/, "", $2); print $2}' /etc/os-release)
 
 echo "Installing VirtualBox ${VERSION}"
@@ -18,4 +18,11 @@ echo "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian $UBUNTU
     sudo dd status=none of=/etc/apt/sources.list.d/virtualbox.list
 
 sudo apt update
-sudo apt install -y "virtualbox-${VERSION}"
+sudo apt install -y "virtualbox-${VERSION%.*}"
+
+echo "Installing Virtualbox Extensions"
+
+wget -c "https://download.virtualbox.org/virtualbox/${VERSION}/Oracle_VM_VirtualBox_Extension_Pack-${VERSION}.vbox-extpack"
+echo "y" | sudo VBoxManage extpack install "./Oracle_VM_VirtualBox_Extension_Pack-${VERSION}.vbox-extpack"
+rm "./Oracle_VM_VirtualBox_Extension_Pack-${VERSION}.vbox-extpack"
+
