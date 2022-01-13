@@ -41,7 +41,7 @@ fi
 
 
 sudo wget -c "$NRFCONNECT_URL" -P /Applications/
-chmod +x /Applications/nrfconnect*.AppImage
+sudo chmod +x /Applications/nrfconnect-*-x86_64.AppImage
 
 
 wget -c "$GNUARMEMB_URL"
@@ -50,19 +50,17 @@ sudo mv gcc-arm-none-eabi-*major /opt/gnuarmemb
 sudo chown -R root:root /opt/gnuarmemb
 rm gcc-arm-none-eabi-*-linux.tar.bz2
 
-
-
-
 # SDK
 sudo mkdir /opt/ncs
 sudo mkdir /opt/vscode_nrf
 sudo mkdir /opt/segger_nrf
+sudo mkdir /opt/cli_nrf
 sudo chmod -R 775 /opt/ncs
 sudo chown -R root:"$SHGROUP" /opt/ncs
 
 # make sure user is a part of the group
 sudo usermod -a -G "$SHGROUP" $USER
-newgrp $SHGROUP
+newgrp $SHGROUP << END
 
 cd /opt/ncs
 python3 -m venv "$SDK"
@@ -76,11 +74,12 @@ west zephyr-export
 pip3 install -r zephyr/scripts/requirements.txt
 pip3 install -r nrf/scripts/requirements.txt
 pip3 install -r bootloader/mcuboot/scripts/requirements.txt
+END
+
 
 # Segger IDE
-cd
-mkdir tmp
-cd tmp
+mkdir /tmp/segger
+cd /tmp/segger
 wget -c --content-disposition "$SEGGER_URL"
 file=$(echo EmbeddedStudio_ARM_Nordic_*_linux_x64.tar.gz)
 version=$(echo ${file%"_linux_x64.tar.gz"})
@@ -88,14 +87,14 @@ version=$(echo ${version#"EmbeddedStudio_ARM_Nordic_"})
 sudo tar -xf "$file" -C "/opt/segger_nrf/"
 sudo mv "/opt/segger_nrf/arm_segger_embedded_studio_${version}_linux_x64_nordic" \
         "/opt/segger_nrf/${version}"
-cd ../
-rm -Rf tmp
+cd
+rm -Rf /tmp/segger
 
 # add desktop files
 cat <<EOF | sudo dd status=none of="/usr/local/share/applications/arm_segger_embedded_studio_${version}.desktop"
 #!/usr/bin/env xdg-open
 [Desktop Entry]
-Name=Segger Embedded Studio (Nordic) ($version)
+Name=Segger Embedded Studio (nRF) ($version)
 Exec=/opt/segger_nrf/$version/bin/emStudio.sh
 Comment=Segger Embedded Studio For Nordic
 Terminal=false
@@ -128,7 +127,7 @@ EOF
 
 sudo chmod +x "/opt/segger_nrf/${version}/bin/emStudio.sh"
 
-# seems permissions don't stick on some system
+
 sudo chmod -R 775 /opt/ncs
 sudo chown -R root:"$SHGROUP" /opt/ncs
 
@@ -146,7 +145,7 @@ sdk_choice=\$(zenity --list --title "SDK version" --column="SDK Version" \${sdks
 export GNUARMEMB_TOOLCHAIN_PATH=/opt/gnuarmemb
 source "/opt/ncs/\$sdk_choice/bin/activate"
 source "/opt/ncs/\$sdk_choice/zephyr/zephyr-env.sh"
-code
+code "\$@"
 
 EOF
 
@@ -157,7 +156,63 @@ sudo chmod +x "/opt/vscode_nrf/vscode_nrf.sh"
 sudo apt install -y code
 code --install-extension nordic-semiconductor.nrf-connect-extension-pack
 
+cat <<EOF | sudo dd status=none of="/usr/local/share/applications/code_nrf.desktop"
+[Desktop Entry]
+Name=Visual Studio Code (nRF)
+Comment=Code Editing. Redefined.
+GenericName=Text Editor
+Exec=/opt/vscode_nrf/vscode_nrf.sh --unity-launch %F
+Icon=com.visualstudio.code
+Type=Application
+StartupNotify=false
+StartupWMClass=Code
+Categories=Utility;TextEditor;Development;IDE;
+MimeType=text/plain;inode/directory;application/x-code-workspace;
+Actions=new-empty-window;
+Keywords=vscode;
+
+X-Desktop-File-Install-Version=0.26
+
+[Desktop Action new-empty-window]
+Name=New Empty Window
+Exec=/opt/vscode_nrf/vscode_nrf.sh --new-window %F
+Icon=com.visualstudio.code
+EOF
 
 
+# install Terminal
+cat <<EOF | sudo dd status=none of="/opt/cli_nrf/cli_nrf.sh"
+#!/bin/bash
+sdks=()
+for entry in /opt/ncs/*
+do
+  sdk_version=\$(basename \$entry)
+  sdks+=("\$sdk_version")
+done
+sdk_choice=\$(zenity --list --title "SDK version" --column="SDK Version" \${sdks[@]})
+
+export GNUARMEMB_TOOLCHAIN_PATH=/opt/gnuarmemb
+source "/opt/ncs/\$sdk_choice/bin/activate"
+source "/opt/ncs/\$sdk_choice/zephyr/zephyr-env.sh"
+x-terminal-emulator "\$@"
+
+EOF
+
+sudo chmod +x "/opt/cli_nrf/cli_nrf.sh"
+
+cat <<EOF | sudo dd status=none of="/usr/local/share/applications/cli_nrf.desktop"
+[Desktop Entry]
+# VERSION=3.38.1
+Name=Terminal (nRF)
+Comment=Use the command line
+Keywords=shell;prompt;command;commandline;cmd;
+Exec=/opt/cli_nrf/cli_nrf.sh
+Icon=terminal
+Type=Application
+Categories=System;TerminalEmulator;
+StartupNotify=true
+X-GNOME-SingleWindow=false
+
+EOF
 
 
