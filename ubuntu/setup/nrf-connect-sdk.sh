@@ -4,7 +4,7 @@ export SDK="v1.5.0"
 export NRFCONNECT_URL="https://nsscprodmedia.blob.core.windows.net/prod/software-and-other-downloads/desktop-software/nrf-connect-for-desktop/3-9-3/nrfconnect-3.9.3-x86_64.appimage"
 export GNUARMEMB_URL="https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2"
 export SEGGER_URL="https://segger.com/downloads/embedded-studio/embeddedstudio_arm_nordic_linux_x64"
-export SHGROUP="nrfconnect"
+export SHGROUP="nordic"
 
 sudo addgroup $SHGROUP
 
@@ -51,20 +51,21 @@ sudo chown -R root:root /opt/gnuarmemb
 rm gcc-arm-none-eabi-*-linux.tar.bz2
 
 # SDK
-sudo mkdir /opt/ncs
-sudo mkdir /opt/vscode_nrf
-sudo mkdir /opt/segger_nrf
-sudo mkdir /opt/cli_nrf
-sudo chmod -R 775 /opt/ncs
-sudo chown -R root:"$SHGROUP" /opt/ncs
+sudo mkdir /opt/nordic
+sudo mkdir /opt/nordic/ncs
+sudo mkdir /opt/nordic/vscode_nrf
+sudo mkdir /opt/nordic/segger_nrf
+sudo mkdir /opt/nordic/cli_nrf
+sudo chmod -R 775 /opt/nordic
+sudo chown -R root:"$SHGROUP" /opt/nordic
 
 # make sure user is a part of the group
 sudo usermod -a -G "$SHGROUP" $USER
 newgrp $SHGROUP << END
 
-cd /opt/ncs
+cd /opt/nordic/ncs
 python3 -m venv "$SDK"
-cd "/opt/ncs/$SDK"
+cd "/opt/nordic/ncs/$SDK"
 source bin/activate
 pip3 install west wheel
 west init -m https://github.com/nrfconnect/sdk-nrf --mr $SDK
@@ -84,9 +85,9 @@ wget -c --content-disposition "$SEGGER_URL"
 file=$(echo EmbeddedStudio_ARM_Nordic_*_linux_x64.tar.gz)
 version=$(echo ${file%"_linux_x64.tar.gz"})
 version=$(echo ${version#"EmbeddedStudio_ARM_Nordic_"})
-sudo tar -xf "$file" -C "/opt/segger_nrf/"
-sudo mv "/opt/segger_nrf/arm_segger_embedded_studio_${version}_linux_x64_nordic" \
-        "/opt/segger_nrf/${version}"
+sudo tar -xf "$file" -C "/opt/nordic/segger_nrf/"
+sudo mv "/opt/nordic/segger_nrf/arm_segger_embedded_studio_${version}_linux_x64_nordic" \
+        "/opt/nordic/segger_nrf/${version}"
 cd
 rm -Rf /tmp/segger
 
@@ -95,10 +96,10 @@ cat <<EOF | sudo dd status=none of="/usr/local/share/applications/arm_segger_emb
 #!/usr/bin/env xdg-open
 [Desktop Entry]
 Name=Segger Embedded Studio (nRF) ($version)
-Exec=/opt/segger_nrf/$version/bin/emStudio.sh
+Exec=/opt/nordic/segger_nrf/$version/bin/emStudio.sh
 Comment=Segger Embedded Studio For Nordic
 Terminal=false
-Icon=/opt/segger_nrf/$version/bin/StudioIcon.png
+Icon=/opt/nordic/segger_nrf/$version/bin/StudioIcon.png
 Type=Application
 Categories=Programming;IDE
 Hidden=false
@@ -108,10 +109,10 @@ EOF
 
 
 
-cat <<EOF | sudo dd status=none of="/opt/segger_nrf/${version}/bin/emStudio.sh"
+cat <<EOF | sudo dd status=none of="/opt/nordic/segger_nrf/${version}/bin/emStudio.sh"
 #!/bin/bash
 sdks=()
-for entry in /opt/ncs/*
+for entry in /opt/nordic/ncs/*
 do
   sdk_version=\$(basename \$entry)
   sdks+=("\$sdk_version")
@@ -119,23 +120,23 @@ done
 sdk_choice=\$(zenity --list --title "SDK version" --column="SDK Version" \${sdks[@]})
 
 export GNUARMEMB_TOOLCHAIN_PATH=/opt/gnuarmemb
-source "/opt/ncs/\$sdk_choice/bin/activate"
-source "/opt/ncs/\$sdk_choice/zephyr/zephyr-env.sh"
-/opt/segger_nrf/${version}/bin/emStudio
+source "/opt/nordic/ncs/\$sdk_choice/bin/activate"
+source "/opt/nordic/ncs/\$sdk_choice/zephyr/zephyr-env.sh"
+/opt/nordic/segger_nrf/${version}/bin/emStudio
 
 EOF
 
-sudo chmod +x "/opt/segger_nrf/${version}/bin/emStudio.sh"
+sudo chmod +x "/opt/nordic/segger_nrf/${version}/bin/emStudio.sh"
 
 
-sudo chmod -R 775 /opt/ncs
-sudo chown -R root:"$SHGROUP" /opt/ncs
+sudo chmod -R 775 /opt/nordic/ncs
+sudo chown -R root:"$SHGROUP" /opt/nordic/ncs
 
 # install VSCode
-cat <<EOF | sudo dd status=none of="/opt/vscode_nrf/vscode_nrf.sh"
+cat <<EOF | sudo dd status=none of="/opt/nordic/vscode_nrf/vscode_nrf.sh"
 #!/bin/bash
 sdks=()
-for entry in /opt/ncs/*
+for entry in /opt/nordic/ncs/*
 do
   sdk_version=\$(basename \$entry)
   sdks+=("\$sdk_version")
@@ -143,13 +144,13 @@ done
 sdk_choice=\$(zenity --list --title "SDK version" --column="SDK Version" \${sdks[@]})
 
 export GNUARMEMB_TOOLCHAIN_PATH=/opt/gnuarmemb
-source "/opt/ncs/\$sdk_choice/bin/activate"
-source "/opt/ncs/\$sdk_choice/zephyr/zephyr-env.sh"
+source "/opt/nordic/ncs/\$sdk_choice/bin/activate"
+source "/opt/nordic/ncs/\$sdk_choice/zephyr/zephyr-env.sh"
 code "\$@"
 
 EOF
 
-sudo chmod +x "/opt/vscode_nrf/vscode_nrf.sh"
+sudo chmod +x "/opt/nordic/vscode_nrf/vscode_nrf.sh"
 
 
 # nRf extensions
@@ -161,7 +162,7 @@ cat <<EOF | sudo dd status=none of="/usr/local/share/applications/code_nrf.deskt
 Name=Visual Studio Code (nRF)
 Comment=Code Editing. Redefined.
 GenericName=Text Editor
-Exec=/opt/vscode_nrf/vscode_nrf.sh --unity-launch %F
+Exec=/opt/nordic/vscode_nrf/vscode_nrf.sh --unity-launch %F
 Icon=com.visualstudio.code
 Type=Application
 StartupNotify=false
@@ -175,16 +176,16 @@ X-Desktop-File-Install-Version=0.26
 
 [Desktop Action new-empty-window]
 Name=New Empty Window
-Exec=/opt/vscode_nrf/vscode_nrf.sh --new-window %F
+Exec=/opt/nordic/vscode_nrf/vscode_nrf.sh --new-window %F
 Icon=com.visualstudio.code
 EOF
 
 
 # install Terminal
-cat <<EOF | sudo dd status=none of="/opt/cli_nrf/cli_nrf.sh"
+cat <<EOF | sudo dd status=none of="/opt/nordic/cli_nrf/cli_nrf.sh"
 #!/bin/bash
 sdks=()
-for entry in /opt/ncs/*
+for entry in /opt/nordic/ncs/*
 do
   sdk_version=\$(basename \$entry)
   sdks+=("\$sdk_version")
@@ -192,13 +193,13 @@ done
 sdk_choice=\$(zenity --list --title "SDK version" --column="SDK Version" \${sdks[@]})
 
 export GNUARMEMB_TOOLCHAIN_PATH=/opt/gnuarmemb
-source "/opt/ncs/\$sdk_choice/bin/activate"
-source "/opt/ncs/\$sdk_choice/zephyr/zephyr-env.sh"
+source "/opt/nordic/ncs/\$sdk_choice/bin/activate"
+source "/opt/nordic/ncs/\$sdk_choice/zephyr/zephyr-env.sh"
 x-terminal-emulator "\$@"
 
 EOF
 
-sudo chmod +x "/opt/cli_nrf/cli_nrf.sh"
+sudo chmod +x "/opt/nordic/cli_nrf/cli_nrf.sh"
 
 cat <<EOF | sudo dd status=none of="/usr/local/share/applications/cli_nrf.desktop"
 [Desktop Entry]
@@ -206,7 +207,7 @@ cat <<EOF | sudo dd status=none of="/usr/local/share/applications/cli_nrf.deskto
 Name=Terminal (nRF)
 Comment=Use the command line
 Keywords=shell;prompt;command;commandline;cmd;
-Exec=/opt/cli_nrf/cli_nrf.sh
+Exec=/opt/nordic/cli_nrf/cli_nrf.sh
 Icon=terminal
 Type=Application
 Categories=System;TerminalEmulator;
