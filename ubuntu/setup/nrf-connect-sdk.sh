@@ -21,7 +21,7 @@ sudo apt update
 sudo apt install -y --no-install-recommends git cmake ninja-build gperf \
   ccache dfu-util device-tree-compiler wget libncurses5 python3-venv \
   python3-dev python3-pip python3-setuptools python3-tk python3-wheel \
-  xz-utils file make gcc gcc-multilib g++-multilib libsdl2-dev zenity
+  xz-utils file make gcc gcc-multilib g++-multilib libsdl2-dev zenity yad
 
 
 
@@ -55,9 +55,8 @@ rm gcc-arm-none-eabi-*-linux.tar.bz2
 # SDK
 sudo mkdir /opt/nordic
 sudo mkdir /opt/nordic/ncs
-sudo mkdir /opt/nordic/vscode_nrf
-sudo mkdir /opt/nordic/segger_nrf
-sudo mkdir /opt/nordic/cli_nrf
+sudo mkdir /opt/nordic/tools
+sudo mkdir /opt/nordic/segger
 sudo chmod -R 775 /opt/nordic
 sudo chown -R root:"$SHGROUP" /opt/nordic
 
@@ -80,6 +79,9 @@ pip3 install -r bootloader/mcuboot/scripts/requirements.txt
 END
 
 
+sudo chmod -R 775 /opt/nordic/ncs
+sudo chown -R root:"$SHGROUP" /opt/nordic/ncs
+
 # Segger IDE
 mkdir /tmp/segger
 cd /tmp/segger
@@ -87,9 +89,9 @@ wget -c --content-disposition "$SEGGER_URL"
 file=$(echo EmbeddedStudio_ARM_Nordic_*_linux_x64.tar.gz)
 version=$(echo ${file%"_linux_x64.tar.gz"})
 version=$(echo ${version#"EmbeddedStudio_ARM_Nordic_"})
-sudo tar -xf "$file" -C "/opt/nordic/segger_nrf/"
-sudo mv "/opt/nordic/segger_nrf/arm_segger_embedded_studio_${version}_linux_x64_nordic" \
-        "/opt/nordic/segger_nrf/${version}"
+sudo tar -xf "$file" -C "/opt/nordic/segger/"
+sudo mv "/opt/nordic/segger/arm_segger_embedded_studio_${version}_linux_x64_nordic" \
+        "/opt/nordic/segger/${version}"
 cd
 rm -Rf /tmp/segger
 
@@ -98,10 +100,10 @@ cat <<EOF | sudo dd status=none of="/usr/local/share/applications/arm_segger_emb
 #!/usr/bin/env xdg-open
 [Desktop Entry]
 Name=Segger Embedded Studio (nRF) ($version)
-Exec=/opt/nordic/segger_nrf/$version/bin/emStudio.sh
+Exec=/opt/nordic/segger/$version/bin/emStudio.sh
 Comment=Segger Embedded Studio For Nordic
 Terminal=false
-Icon=/opt/nordic/segger_nrf/$version/bin/StudioIcon.png
+Icon=/opt/nordic/segger/$version/bin/StudioIcon.png
 Type=Application
 Categories=Programming;IDE
 Hidden=false
@@ -111,7 +113,7 @@ EOF
 
 
 
-cat <<EOF | sudo dd status=none of="/opt/nordic/segger_nrf/${version}/bin/emStudio.sh"
+cat <<EOF | sudo dd status=none of="/opt/nordic/segger/${version}/bin/emStudio.sh"
 #!/bin/bash
 sdks=()
 for entry in /opt/nordic/ncs/*
@@ -122,69 +124,27 @@ done
 sdk_choice=\$(zenity --list --title "SDK version" --column="SDK Version" \${sdks[@]})
 
 export GNUARMEMB_TOOLCHAIN_PATH=/opt/gnuarmemb
+export ZEPHYR_TOOLCHAIN_VARIANT=gnuarmemb
 source "/opt/nordic/ncs/\$sdk_choice/bin/activate"
 source "/opt/nordic/ncs/\$sdk_choice/zephyr/zephyr-env.sh"
 /opt/nordic/segger_nrf/${version}/bin/emStudio
 
 EOF
 
-sudo chmod +x "/opt/nordic/segger_nrf/${version}/bin/emStudio.sh"
+sudo chmod +x "/opt/nordic/segger/${version}/bin/emStudio.sh"
 
+sudo ln -s "/opt/nordic/segger/${version}/bin/emStudio" "/usr/local/bin/emStudio"
 
-sudo chmod -R 775 /opt/nordic/ncs
-sudo chown -R root:"$SHGROUP" /opt/nordic/ncs
 
 # install VSCode
-cat <<EOF | sudo dd status=none of="/opt/nordic/vscode_nrf/vscode_nrf.sh"
-#!/bin/bash
-sdks=()
-for entry in /opt/nordic/ncs/*
-do
-  sdk_version=\$(basename \$entry)
-  sdks+=("\$sdk_version")
-done
-sdk_choice=\$(zenity --list --title "SDK version" --column="SDK Version" \${sdks[@]})
-
-export GNUARMEMB_TOOLCHAIN_PATH=/opt/gnuarmemb
-source "/opt/nordic/ncs/\$sdk_choice/bin/activate"
-source "/opt/nordic/ncs/\$sdk_choice/zephyr/zephyr-env.sh"
-code "\$@"
-
-EOF
-
-sudo chmod +x "/opt/nordic/vscode_nrf/vscode_nrf.sh"
-
+sudo apt install -y code
 
 # nRf extensions
-sudo apt install -y code
 code --install-extension nordic-semiconductor.nrf-connect-extension-pack
 
-cat <<EOF | sudo dd status=none of="/usr/local/share/applications/code_nrf.desktop"
-[Desktop Entry]
-Name=Visual Studio Code (nRF)
-Comment=Code Editing. Redefined.
-GenericName=Text Editor
-Exec=/opt/nordic/vscode_nrf/vscode_nrf.sh --unity-launch %F
-Icon=com.visualstudio.code
-Type=Application
-StartupNotify=false
-StartupWMClass=Code
-Categories=Utility;TextEditor;Development;IDE;
-MimeType=text/plain;inode/directory;application/x-code-workspace;
-Actions=new-empty-window;
-Keywords=vscode;
+# Add nRF launcher
 
-X-Desktop-File-Install-Version=0.26
-
-[Desktop Action new-empty-window]
-Name=New Empty Window
-Exec=/opt/nordic/vscode_nrf/vscode_nrf.sh --new-window %F
-Icon=com.visualstudio.code
-EOF
-
-
-# install Terminal
-cat <<EOF | sudo dd status=none of="/opt/nordic/cli_nrf/cli_nrf.sh"
+cat <<EOF | sudo dd status=none of="/opt/nordic/tools/nrf-launcher.sh"
 #!/bin/bash
 sdks=()
 for entry in /opt/nordic/ncs/*
@@ -192,30 +152,54 @@ do
   sdk_version=\$(basename \$entry)
   sdks+=("\$sdk_version")
 done
-sdk_choice=\$(zenity --list --title "SDK version" --column="SDK Version" \${sdks[@]})
 
-export GNUARMEMB_TOOLCHAIN_PATH=/opt/gnuarmemb
-source "/opt/nordic/ncs/\$sdk_choice/bin/activate"
-source "/opt/nordic/ncs/\$sdk_choice/zephyr/zephyr-env.sh"
-x-terminal-emulator "\$@"
+printf -v joined '%s,' "\${sdks[@]}"
+sdk_choices=\$(echo "\${joined%,}")
+tool_choices="Visual Studio Code,Segger Embedded Studio,Terminal"
 
+choices=\$(yad --separator="," --item-separator="," \\
+               --window-icon=/opt/nordic/tools/icon.svg \\
+               --title="nRF Launcher" --form \\
+               --field="SDK Version":CB "\${sdk_choices}" \\
+               --field="Tool":CB "\${tool_choices}")
+
+if [ ! -z "\${choices}" ]; then
+  sdk_choice=\$(echo \$choices | cut -d ',' -f1)
+  tool_choice=\$(echo \$choices | cut -d ',' -f2)
+  export GNUARMEMB_TOOLCHAIN_PATH=/opt/gnuarmemb
+  export ZEPHYR_TOOLCHAIN_VARIANT=gnuarmemb
+  source "/opt/nordic/ncs/\$sdk_choice/bin/activate"
+  source "/opt/nordic/ncs/\$sdk_choice/zephyr/zephyr-env.sh"
+
+
+  case "\${tool_choice}" in
+  "Visual Studio Code")
+    code "\$@"
+    ;;
+  "Segger Embedded Studio")
+    emStudio "\$@"
+    ;;
+  "Terminal")
+    x-terminal-emulator "\$@"
+    ;;
+esac
+fi
 EOF
 
-sudo chmod +x "/opt/nordic/cli_nrf/cli_nrf.sh"
+sudo chmod +x /opt/nordic/tools/nrf-launcher.sh
+sudo wget https://raw.githubusercontent.com/NordicSemiconductor/pc-nrfconnect-launcher/master/resources/icon.svg -P /opt/nordic/tools/
 
-cat <<EOF | sudo dd status=none of="/usr/local/share/applications/cli_nrf.desktop"
+# add desktop files
+cat <<EOF | sudo dd status=none of="/usr/local/share/applications/nrf-launcher.desktop"
+#!/usr/bin/env xdg-open
 [Desktop Entry]
-# VERSION=3.38.1
-Name=Terminal (nRF)
-Comment=Use the command line
-Keywords=shell;prompt;command;commandline;cmd;
-Exec=/opt/nordic/cli_nrf/cli_nrf.sh
-Icon=terminal
+Name=nRF Launcher
+Exec=/opt/nordic/tools/nrf-launcher.sh
+Comment=Launch tools in nRF Connect SDK
+Terminal=false
+Icon=/opt/nordic/tools/icon.svg
 Type=Application
-Categories=System;TerminalEmulator;
-StartupNotify=true
-X-GNOME-SingleWindow=false
-
+Categories=Programming
+Hidden=false
+NoDisplay=false
 EOF
-
-
