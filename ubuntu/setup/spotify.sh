@@ -4,7 +4,7 @@
 
 echo "Installing Spotify"
 
-wget -qO - https://download.spotify.com/debian/pubkey_0D811D58.gpg |\
+wget -qO - https://download.spotify.com/debian/pubkey_5E3C45D7B312C643.gpg |\
     gpg --dearmor |\
     sudo dd status=none of=/etc/apt/trusted.gpg.d/spotify.gpg
 
