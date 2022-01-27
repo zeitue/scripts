@@ -1,7 +1,9 @@
 #!/bin/bash
 
 export SDK="v1.5.0"
-export NRFCONNECT_URL="https://nsscprodmedia.blob.core.windows.net/prod/software-and-other-downloads/desktop-software/nrf-connect-for-desktop/3-9-3/nrfconnect-3.9.3-x86_64.appimage"
+
+export NRFCONNECT_URL=$(echo "https://www.nordicsemi.com`curl https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-desktop/Download#infotabs |\
+      grep AppImage | grep -o '>.*</span>' | sed 's/\(>\|<\/span>\)//g;s/|/\n/g' | sed -n '2 p'`")
 export GNUARMEMB_URL="https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2"
 export SEGGER_URL="https://segger.com/downloads/embedded-studio/embeddedstudio_arm_nordic_linux_x64"
 export SHGROUP="nordic"
@@ -35,13 +37,13 @@ sudo ln -s /opt/gn/gn /usr/local/bin/gn
 
 if [[ ! -d /Applications ]]; then
   sudo mkdir /Applications
-  sudo chmod 775 /Applications
+  sudo chmod 777 /Applications
   sudo chown root:users /Applications
 fi
 
 
-sudo wget -c "$NRFCONNECT_URL" -P /Applications/
-sudo chmod +x /Applications/nrfconnect-*-x86_64.AppImage
+wget -c "$NRFCONNECT_URL" -P /Applications/
+chmod +x /Applications/nrfconnect-*-x86_64.AppImage
 
 
 wget -c "$GNUARMEMB_URL"
