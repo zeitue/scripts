@@ -4,12 +4,73 @@ export SDK="v1.5.0"
 
 export NRFCONNECT_URL=$(echo "https://www.nordicsemi.com`curl https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-desktop/Download#infotabs |\
       grep AppImage | grep -o '>.*</span>' | sed 's/\(>\|<\/span>\)//g;s/|/\n/g' | sed -n '2 p'`")
+
+export NRFCLI_URL=$(echo "https://www.nordicsemi.com`curl https://www.nordicsemi.com/Products/Development-tools/nrf-command-line-tools/download |\
+      grep -i Linux-amd64.zip | grep -o '>.*</span>' | sed 's/\(>\|<\/span>\)//g;s/|/\n/g' | sed -n '2 p'`")
+
 export GNUARMEMB_URL="https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2"
 export SEGGER_URL="https://segger.com/downloads/embedded-studio/embeddedstudio_arm_nordic_linux_x64"
 export SHGROUP="nordic"
 
 sudo addgroup $SHGROUP
 
+# nRF tools
+echo "Installing nRF Command Line Tools"
+sudo mkdir -p /usr/local/share/applications
+sudo mkdir -p /usr/local/share/pixmaps
+mkdir nrf-cmd
+cd nrf-cmd
+
+# Download
+wget -c  --content-disposition $NRFCLI_URL
+unzip *.zip
+
+# Install
+sudo apt install -y ./*.deb
+
+# icon start
+base64 -d <<EOF | dd status=none of="./jlink.png"
+iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAC9klEQVRoge1ay2oVQRBNiBojRoyP
+SDBBgyFGEx8EXLgRXLhw4SKLLIK4UHAhCJJFIGQREMwmGz/BP/A7/Kp75NAWFGXPdE/3dM+9JA1F
+Qs+rTp0+VV1zZ2r7FHh+4uzZd+DpMbB15OzxAbCx7+zhV2D9C7D22dmDj8DqB+D+nrN7u8DKDrD8
+ztndt8DSG2d3XgOLr4BbL53dfAHc2AauP3F27REwvw5cXXV2ZQWYWwIuLwKzt4FLC8CFeWczc8D0
+RWBq+p8RAP/hJI0n8ERexIt5E96MN6XxAXwYHyoO0Bk6JQ7SWTotAAiGoAiQRrAEzQAwEGufXFAY
+IAZq45sLGgO4eeiCycAywBJs8TsIgGYB0PkuAIQVDYDOi/kA0HmarIYoAHS+jQGhWDNA5zUAOq8B
+MPqaATqfywB9bmRA1losAM3AaDSKthAAYaDTEkphIBXAz9+j+hoILaESAHwaaFxCuRoYnIHcJUQR
+0zGf9clAUQA2jUoW6pOBYkuorQ5UYSBUiXPqwMRooGkrMbZZaAgNFN1KTBwDIQBVGUgRsW8J0fmJ
+YeBMaCBlK9HWD1TXgM/5sWHALiFdyNo2cjENDZ0vvpXosgPV0S/S0KRkoRTni7WUpRjQ2+qUnpjO
+F9VAUw+gretrlbHKQn2/laj6WiX3xdbYVOIqDNBkUHwxAPTIebWoR5YG9KD4YgFItkllwD43WQOp
+AOT8VA1IECyA4gzYNJrLgDA5CAO6H9ARtX9//QkzoDWgi2I1DWiH7OA8QcQwYCt6dBZKYUBrwEZU
+TDv6/sf/DGgA1vmqWcjOiwasoz4AesnJedWykF1CXQFYIDyneB3QD/NpIBaAPibXDVYHBmdALs5h
+QN+niwbs6/hoDUgW0hemaMDWgRQAvhTamYGmPM5RQgM2jXauA1YDbYM3C2lAz2sAej60mbOVmMeC
+/UBMiygA2vZCvpaS+yA9r/sBPW/3QvrYIL8PnPfEQ/3EVKUn7utzG/3JTR+f2/g+ubGf2/wFWLcX
+3hpA/V8AAAAASUVORK5CYII=
+EOF
+# icon end
+
+sudo install ./jlink.png /usr/local/share/pixmaps
+
+for EXE in $(ls -1 /opt/SEGGER/JLink/*Exe);do
+WMCLASS=$(basename $EXE)
+NAME=${WMCLASS::-3}
+cat <<EOF | sudo dd status=none of="/usr/local/share/applications/${WMCLASS}.desktop"
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Name=$NAME
+Exec=$EXE
+Icon=/usr/local/share/pixmaps/jlink.png
+Terminal=false
+Type=Application
+Categories=Development;
+StartupNotify=true
+Keywords=IDE;development;programming;
+StartupWMClass=$WMCLASS
+EOF
+done
+
+# Cleanup
+cd ../
+rm -Rf nrf-cmd
 
 # nRF SDK
 echo "Installing nRF Connect SDK"
