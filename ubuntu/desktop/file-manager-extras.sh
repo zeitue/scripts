@@ -26,6 +26,7 @@ if [ -e /usr/bin/nautilus ]; then
     nautilus-image-converter nautilus-sendto nautilus-gtkhash
 fi
 
+# Dolphin extensions
 if [ -e /usr/bin/dolphin ]; then
   echo "Installing Dolphin extensions"
   sudo apt install -y dolphin-nextcloud\
