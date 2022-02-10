@@ -9,10 +9,10 @@ import sys;
 from json import loads as l;
 x = l(sys.stdin.read());
 print(''.join(s['browser_download_url']
-for s in x['assets'] if s['name'].endswith('.$SUFFIX')))"
+for s in x['assets'] if s['name'].endswith('$SUFFIX')))"
 }
 
-URL=$(getLatest processing/processing4 tgz)
+URL=$(getLatest processing/processing4 x64.tgz)
 ANAME=$(echo $URL | sed 's:.*/::')
 FNAME=${ANAME%.*}
 
