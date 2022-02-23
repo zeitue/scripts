@@ -17,11 +17,16 @@ ANAME=$(echo $URL | sed 's:.*/::')
 FNAME=${ANAME%.*}
 
 echo "Installing Processing"
+mkdir processing-tmp
+cd processing-tmp
 wget -c $URL
 tar -xf $ANAME
+FNAME=$(find . -maxdepth 1 -type d -name 'proc*')
+sudo rm -Rf /opt/processing/
 sudo mv $FNAME /opt/processing
 sudo sh /opt/processing/install.sh
-sudo ln -s /opt/processing/processing /usr/local/bin/
+sudo ln -s -f /opt/processing/processing /usr/local/bin/
 sudo chown -R root:root /opt/processing
-rm $ANAME
+cd ..
+rm -Rf processing-tmp
 
