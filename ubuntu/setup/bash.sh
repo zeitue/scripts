@@ -6,7 +6,9 @@ sudo apt install -y bash git wget
 
 # Oh My Bash
 
-bash -c "$(wget https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh -O -)"
+git clone https://github.com/ohmybash/oh-my-bash.git ~/.oh-my-bash
+cp ~/.bashrc ~/.bashrc.orig
+cp ~/.oh-my-bash/templates/bashrc.osh-template ~/.bashrc
 
 sed -i -e 's/font/pure/g' ~/.bashrc
 sed -i -e 's/OSH=.*$/OSH=\"$HOME\/.oh-my-bash\"/g' ~/.bashrc
