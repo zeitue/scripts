@@ -16,6 +16,6 @@ echo "Installing ProjectLibre"
 # seems the API does not like things so quick
 sleep 3
 wget -c --content-disposition "$URL"
-sudo apt install ./$FILENAME
+sudo apt -y install ./$FILENAME
 rm ./$FILENAME
 
