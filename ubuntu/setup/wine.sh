@@ -16,6 +16,8 @@ wget -qO - "https://dl.winehq.org/wine-builds/winehq.key" |\
 # Add repository
 sudo add-apt-repository -y "deb https://dl.winehq.org/wine-builds/ubuntu/ ${UBUNTU_VERSION} main"
 
+sudo apt update
+
 # Install Wine stable
 sudo apt install -y --install-recommends winehq-stable
 
