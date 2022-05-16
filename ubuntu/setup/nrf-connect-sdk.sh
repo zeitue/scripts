@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export SDK="v1.5.0"
+export SDK="main"
 
 export NRFCONNECT_URL=$(echo "https://www.nordicsemi.com`curl https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-desktop/Download#infotabs |\
       grep AppImage | grep -o '>.*</span>' | sed 's/\(>\|<\/span>\)//g;s/|/\n/g' | sed -n '2 p'`")
@@ -25,8 +25,21 @@ cd nrf-cmd
 wget -c  --content-disposition $NRFCLI_URL
 unzip *.zip
 
-# Install
-sudo apt install -y ./*.deb
+# Install nRF command line tools
+tar -xf nrf-command-line-tools-*.tar.gz
+sudo mv nrf-command-line-tools /opt/
+sudo ln -s /opt/nrf-command-line-tools/bin/* /usr/local/bin/
+# Install JLink
+sudo mkdir /opt/SEGGER
+sudo tar -xf JLink_*.tgz -C /opt/SEGGER/
+sudo ln -s /opt/SEGGER/JLink_*x86_64 /opt/SEGGER/JLink
+find /opt/SEGGER/JLink/ -type f -executable ! -name '*.so*' -exec sudo ln -s {} /usr/local/bin/ \;
+find /opt/SEGGER/JLink/ -type f -name '99-jlink.rules' -exec sudo ln -s {} /etc/udev/rules.d/99-segger-jlink.rules \;
+
+# Reload udev
+sudo udevadm control -R
+sudo udevadm trigger --action=remove --attr-match=idVendor=1366 --subsystem-match=usb
+sudo udevadm trigger --action=add    --attr-match=idVendor=1366 --subsystem-match=usb
 
 # icon start
 base64 -d <<EOF | dd status=none of="./jlink.png"
@@ -50,7 +63,7 @@ EOF
 
 sudo install ./jlink.png /usr/local/share/pixmaps
 
-for EXE in $(ls -1 /opt/SEGGER/JLink/*Exe);do
+for EXE in $(ls -1 /opt/JLink*/*Exe);do
 WMCLASS=$(basename $EXE)
 NAME=${WMCLASS::-3}
 cat <<EOF | sudo dd status=none of="/usr/local/share/applications/${WMCLASS}.desktop"
@@ -85,7 +98,6 @@ sudo apt install -y --no-install-recommends git cmake ninja-build gperf \
   xz-utils file make gcc gcc-multilib g++-multilib libsdl2-dev zenity yad
 
 
-
 # install the GN tool
 sudo mkdir /opt/gn
 wget -O gn.zip https://chrome-infra-packages.appspot.com/dl/gn/gn/linux-amd64/+/latest
@@ -99,7 +111,7 @@ sudo ln -s /opt/gn/gn /usr/local/bin/gn
 if [[ ! -d /Applications ]]; then
   sudo mkdir /Applications
   sudo chmod 777 /Applications
-  sudo chown root:users /Applications
+  sudo chown root:root /Applications
 fi
 
 
@@ -140,9 +152,6 @@ pip3 install -r bootloader/mcuboot/scripts/requirements.txt
 END
 
 
-sudo chmod -R 775 /opt/nordic/ncs
-sudo chown -R root:"$SHGROUP" /opt/nordic/ncs
-
 # Segger IDE
 mkdir /tmp/segger
 cd /tmp/segger
@@ -166,7 +175,7 @@ Comment=Segger Embedded Studio For Nordic
 Terminal=false
 Icon=/opt/nordic/segger/$version/bin/StudioIcon.png
 Type=Application
-Categories=Programming;IDE
+Categories=IDE;development;programming;
 Hidden=false
 NoDisplay=false
 StartupWMClass=SEGGER Embedded Studio
@@ -260,7 +269,7 @@ Comment=Launch tools in nRF Connect SDK
 Terminal=false
 Icon=/opt/nordic/tools/icon.svg
 Type=Application
-Categories=Programming
+Categories=IDE;development;programming;
 Hidden=false
 NoDisplay=false
 EOF
