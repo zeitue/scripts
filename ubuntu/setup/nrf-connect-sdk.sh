@@ -34,7 +34,7 @@ sudo mkdir /opt/SEGGER
 sudo tar -xf JLink_*.tgz -C /opt/SEGGER/
 sudo ln -s /opt/SEGGER/JLink_*x86_64 /opt/SEGGER/JLink
 find /opt/SEGGER/JLink/ -type f -executable ! -name '*.so*' -exec sudo ln -s {} /usr/local/bin/ \;
-find /opt/SEGGER/JLink/ -type f -name '99-jlink.rules' -exec sudo ln -s {} /etc/udev/rules.d/99-segger-jlink.rules \;
+find /opt/SEGGER/JLink/ -type f -name '99-jlink.rules' -exec sudo cp {} /etc/udev/rules.d/99-segger-jlink.rules \;
 
 # Reload udev
 sudo udevadm control -R
