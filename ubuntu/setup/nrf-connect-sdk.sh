@@ -74,9 +74,9 @@ Exec=$EXE
 Icon=/usr/local/share/pixmaps/jlink.png
 Terminal=false
 Type=Application
-Categories=Development;
+Categories=IDE;Development;
 StartupNotify=true
-Keywords=IDE;development;programming;
+Keywords=IDE;development;
 StartupWMClass=$WMCLASS
 EOF
 done
@@ -175,7 +175,7 @@ Comment=Segger Embedded Studio For Nordic
 Terminal=false
 Icon=/opt/nordic/segger/$version/bin/StudioIcon.png
 Type=Application
-Categories=IDE;development;programming;
+Categories=IDE;Development;
 Hidden=false
 NoDisplay=false
 StartupWMClass=SEGGER Embedded Studio
@@ -269,7 +269,8 @@ Comment=Launch tools in nRF Connect SDK
 Terminal=false
 Icon=/opt/nordic/tools/icon.svg
 Type=Application
-Categories=IDE;development;programming;
+Categories=IDE;Development;
 Hidden=false
 NoDisplay=false
 EOF
+
