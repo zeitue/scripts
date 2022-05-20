@@ -7,7 +7,8 @@ echo "Installing EasyEDA"
 URL=$(curl https://easyeda.com/page/download |\
       grep easyeda-linux |\
       sed 's/.*=//' |\
-      tr -d \")
+      tr -d \" |\
+      cut -f1 -d ">")
 FNAME=$(echo $URL | sed 's:.*/::')
 
 wget -c $URL
