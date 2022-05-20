@@ -6,7 +6,8 @@ URL=$(curl https://vivaldi.com/download/ |\
       sed 's/>/>\n/g' |\
       grep "amd64.deb" |\
       sed -n 's:.*href="\(.*\)">.*:\1:p' |\
-      cut -d\" -f1)
+      cut -d\" -f1 |\
+      head -n1)
 
 FILENAME=$(basename "$URL")
 wget -c "$URL"
