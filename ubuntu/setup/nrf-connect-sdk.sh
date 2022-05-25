@@ -1,7 +1,5 @@
 #!/bin/bash
 
-export SDK="main"
-
 export NRFCONNECT_URL=$(echo "https://www.nordicsemi.com`curl https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-desktop/Download#infotabs |\
       grep AppImage | grep -o '>.*</span>' | sed 's/\(>\|<\/span>\)//g;s/|/\n/g' | sed -n '2 p'`")
 
@@ -10,9 +8,6 @@ export NRFCLI_URL=$(echo "https://www.nordicsemi.com`curl https://www.nordicsemi
 
 export GNUARMEMB_URL="https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2"
 export SEGGER_URL="https://segger.com/downloads/embedded-studio/embeddedstudio_arm_nordic_linux_x64"
-export SHGROUP="nordic"
-
-sudo addgroup $SHGROUP
 
 # nRF tools
 echo "Installing nRF Command Line Tools"
@@ -111,8 +106,8 @@ sudo ln -s /opt/gn/gn /usr/local/bin/gn
 
 if [[ ! -d /Applications ]]; then
   sudo mkdir /Applications
-  sudo chmod 777 /Applications
   sudo chown root:root /Applications
+  sudo chmod 777 /Applications
 fi
 
 
@@ -132,25 +127,8 @@ sudo mkdir /opt/nordic/ncs
 sudo mkdir /opt/nordic/tools
 sudo mkdir /opt/nordic/segger
 sudo chmod -R 775 /opt/nordic
-sudo chown -R root:"$SHGROUP" /opt/nordic
-
-# make sure user is a part of the group
-sudo usermod -a -G "$SHGROUP" $USER
-newgrp $SHGROUP << END
-
-cd /opt/nordic/ncs
-python3 -m venv "$SDK"
-cd "/opt/nordic/ncs/$SDK"
-source bin/activate
-pip3 install west wheel
-west init -m https://github.com/nrfconnect/sdk-nrf --mr $SDK
-west update
-west zephyr-export
-
-pip3 install -r zephyr/scripts/requirements.txt
-pip3 install -r nrf/scripts/requirements.txt
-pip3 install -r bootloader/mcuboot/scripts/requirements.txt
-END
+sudo chown -R root:root /opt/nordic
+sudo chmod 777 /opt/nordic/ncs
 
 
 # Segger IDE
@@ -183,7 +161,6 @@ StartupWMClass=SEGGER Embedded Studio
 EOF
 
 
-
 cat <<EOF | sudo dd status=none of="/opt/nordic/segger/${version}/bin/emStudio.sh"
 #!/bin/bash
 sdks=()
@@ -206,66 +183,215 @@ sudo chmod +x "/opt/nordic/segger/${version}/bin/emStudio.sh"
 
 sudo ln -s "/opt/nordic/segger/${version}/bin/emStudio" "/usr/local/bin/emStudio"
 
-
 # install VSCode
 sudo apt install -y code
 
-# nRf extensions
-code --install-extension nordic-semiconductor.nrf-connect-extension-pack
 
-# Add nRF launcher
+# Add nRF Connect SDK Manager
 
-cat <<EOF | sudo dd status=none of="/opt/nordic/tools/nrf-launcher.sh"
-#!/bin/bash
-sdks=()
-for entry in /opt/nordic/ncs/*
-do
-  sdk_version=\$(basename \$entry)
-  sdks+=("\$sdk_version")
-done
+cat <<EOF | sudo dd status=none of="/opt/nordic/tools/nrf-connect-sdk-manager.py"
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""nRF-Connect SDK manager"""
 
-printf -v joined '%s,' "\${sdks[@]}"
-sdk_choices=\$(echo "\${joined%,}")
-tool_choices="Visual Studio Code,Segger Embedded Studio,Terminal"
+import gi
+import os
+import subprocess
+import pprint
+import shlex
+import threading
 
-choices=\$(yad --separator="," --item-separator="," \\
-               --window-icon=/opt/nordic/tools/icon.svg \\
-               --title="nRF Launcher" --form \\
-               --field="SDK Version":CB "\${sdk_choices}" \\
-               --field="Tool":CB "\${tool_choices}")
+gi.require_version('Gtk', '4.0')
+gi.require_version('Adw', '1')
 
-if [ ! -z "\${choices}" ]; then
-  sdk_choice=\$(echo \$choices | cut -d ',' -f1)
-  tool_choice=\$(echo \$choices | cut -d ',' -f2)
-  export GNUARMEMB_TOOLCHAIN_PATH=/opt/gnuarmemb
-  export ZEPHYR_TOOLCHAIN_VARIANT=gnuarmemb
-  source "/opt/nordic/ncs/\$sdk_choice/bin/activate"
-  source "/opt/nordic/ncs/\$sdk_choice/zephyr/zephyr-env.sh"
+from gi.repository import Adw, Gio, Gtk
 
 
-  case "\${tool_choice}" in
-  "Visual Studio Code")
-    code "\$@"
-    ;;
-  "Segger Embedded Studio")
-    emStudio "\$@"
-    ;;
-  "Terminal")
-    x-terminal-emulator "\$@"
-    ;;
-esac
-fi
+class SdkManagerWindow(Gtk.ApplicationWindow):
+
+    def install_remove_thread(self, to_install, sdk, was_installed):
+        if was_installed:
+            if not to_install:
+                print('Remove')
+                script = 'rm -Rf {sdk_dir}/{sdk}'.format(sdk=sdk,
+                                                         sdk_dir=self.sdk_dir)
+                os.system("bash -c '%s'" % script)
+                self.show_list()
+        else:
+            if to_install:
+                print('Install')
+                script = """
+                cd {sdk_dir}/
+                python3 -m venv "{sdk}"
+                cd "{sdk_dir}/{sdk}"
+                source bin/activate
+                pip3 install west wheel
+                west init -m https://github.com/nrfconnect/sdk-nrf --mr {sdk}
+                west update
+                west zephyr-export
+
+                pip3 install -r zephyr/scripts/requirements.txt
+                pip3 install -r nrf/scripts/requirements.txt
+                pip3 install -r bootloader/mcuboot/scripts/requirements.txt
+                """.format(sdk=sdk, sdk_dir=self.sdk_dir)
+                os.system("bash -c '%s'" % script)
+                self.show_list()
+
+    def install_remove(self, swt, to_install, sdk, was_installed):
+        if was_installed != to_install:
+            self.progress()
+            thread = threading.Thread(target=self.install_remove_thread,
+                                      args=(to_install, sdk, was_installed))
+            thread.start()
+
+
+    def run_in_env(self, button, sdk, command):
+        script = """
+          export GNUARMEMB_TOOLCHAIN_PATH=/opt/gnuarmemb
+          export ZEPHYR_TOOLCHAIN_VARIANT=gnuarmemb
+          source "{sdk_dir}/{sdk}/bin/activate"
+          source "{sdk_dir}/{sdk}/zephyr/zephyr-env.sh"
+          {command} &
+        """.format(sdk_dir=self.sdk_dir, sdk=sdk, command=command)
+        os.system("bash -c '%s'" % script)
+
+    def progress(self):
+        self.box.set_child(child=self.spinner)
+        self.spinner.start()
+
+    def show_list(self):
+        self.spinner.stop()
+        listbox_1 = Gtk.ListBox.new()
+        listbox_1.set_selection_mode(mode=Gtk.SelectionMode.NONE)
+        listbox_1.set_margin_end(margin=12)
+        installed = os.listdir(self.sdk_dir)
+        available_list = []
+        git = ["git", "ls-remote", "-t", "--exit-code", "--refs",
+               "https://github.com/nrfconnect/sdk-nrf"]
+        output = subprocess.check_output(git).decode("utf-8")
+        for line in output.split("\\n"):
+            sdk = line.split("/")[-1]
+            if sdk != '':
+                available_list.append(sdk)
+        available = sorted(available_list, reverse=True)
+
+        for sdk in available:
+            row = Gtk.ListBoxRow.new()
+            row.set_selectable(selectable=False)
+
+            hbox = Gtk.Box.new(orientation=Gtk.Orientation.HORIZONTAL,
+                               spacing=0)
+            row.set_child(child=hbox)
+
+            label = Gtk.Label.new(str=sdk)
+            label.set_margin_top(margin=6)
+            label.set_margin_end(margin=6)
+            label.set_margin_bottom(margin=6)
+            label.set_margin_start(margin=6)
+            label.set_xalign(xalign=0)
+            label.set_hexpand(expand=True)
+            hbox.append(child=label)
+
+            switch = Gtk.Switch.new()
+            switch.set_margin_top(margin=6)
+            switch.set_margin_end(margin=6)
+            switch.set_margin_bottom(margin=6)
+            switch.set_margin_start(margin=6)
+            instd = sdk in installed
+            switch.set_state(state=instd)
+            switch.connect('state-set', self.install_remove, sdk, instd)
+            hbox.append(child=switch)
+
+            ses = Gtk.Button.new_with_label(label='SEGGER Embedded Studio')
+            ses.set_sensitive(instd)
+            ses.connect('clicked', self.run_in_env, sdk, 'emStudio')
+            hbox.append(child=ses)
+
+            code = Gtk.Button.new_with_label(label='Visual Studio Code')
+            code.set_sensitive(instd)
+            code.connect('clicked', self.run_in_env, sdk, 'code')
+            hbox.append(child=code)
+
+            terminal = Gtk.Button.new_with_label(label='Terminal')
+            terminal.set_sensitive(instd)
+            terminal.connect('clicked',
+                             self.run_in_env,
+                             sdk,
+                             'x-terminal-emulator')
+            hbox.append(child=terminal)
+            listbox_1.append(child=row)
+        self.box.set_child(child=listbox_1)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.sdk_dir = "/opt/nordic/ncs"
+
+        self.set_title(title='nRF Connect SDK Manager')
+        self.set_default_size(width=int(1366 / 2), height=int(768 / 2))
+        self.set_size_request(width=int(1366 / 2), height=int(768 / 2))
+
+        vbox = Gtk.Box.new(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        vbox.set_homogeneous(homogeneous=True)
+        vbox.set_margin_top(margin=12)
+        vbox.set_margin_end(margin=12)
+        vbox.set_margin_bottom(margin=12)
+        vbox.set_margin_start(margin=12)
+        self.set_child(child=vbox)
+
+        self.box = Gtk.ScrolledWindow.new()
+        vbox.append(child=self.box)
+        self.spinner = Gtk.Spinner.new()
+        self.show_list()
+
+
+class SdkManagerApplication(Adw.Application):
+
+    def __init__(self):
+        super().__init__(application_id='com.nordicsemi.SdkManager',
+                         flags=Gio.ApplicationFlags.FLAGS_NONE)
+
+        self.create_action('quit', self.exit_app, ['<primary>q'])
+
+    def do_activate(self):
+        win = self.props.active_window
+        if not win:
+            win = SdkManagerWindow(application=self)
+        win.present()
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+
+    def do_shutdown(self):
+        Gtk.Application.do_shutdown(self)
+
+    def exit_app(self, action, param):
+        self.quit()
+
+    def create_action(self, name, callback, shortcuts=None):
+        action = Gio.SimpleAction.new(name, None)
+        action.connect('activate', callback)
+        self.add_action(action)
+        if shortcuts:
+            self.set_accels_for_action(f'app.{name}', shortcuts)
+
+
+if __name__ == '__main__':
+    import sys
+
+    app = SdkManagerApplication()
+    app.run(sys.argv)
+
 EOF
 
-sudo chmod +x /opt/nordic/tools/nrf-launcher.sh
+sudo chmod +x /opt/nordic/tools/nrf-connect-sdk-manager.py
 sudo wget https://raw.githubusercontent.com/NordicSemiconductor/pc-nrfconnect-launcher/master/resources/icon.svg -P /opt/nordic/tools/
 
 # add desktop files
-cat <<EOF | sudo dd status=none of="/usr/local/share/applications/nrf-launcher.desktop"
+cat <<EOF | sudo dd status=none of="/usr/local/share/applications/nrf-connect-sdk-manager.desktop"
 #!/usr/bin/env xdg-open
 [Desktop Entry]
-Name=nRF Launcher
-Exec=/opt/nordic/tools/nrf-launcher.sh
+Name=nRF Connect SDK Manager
+Exec=/opt/nordic/tools/nrf-connect-sdk-manager.py
 Comment=Launch tools in nRF Connect SDK
 Terminal=false
 Icon=/opt/nordic/tools/icon.svg
@@ -273,5 +399,6 @@ Type=Application
 Categories=IDE;Development;
 Hidden=false
 NoDisplay=false
+StartupWMClass=nrf-connect-sdk-manager.py
 EOF
 
