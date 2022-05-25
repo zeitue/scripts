@@ -95,7 +95,8 @@ sudo apt update
 sudo apt install -y --no-install-recommends git cmake ninja-build gperf \
   ccache dfu-util device-tree-compiler wget libncurses5 python3-venv \
   python3-dev python3-pip python3-setuptools python3-tk python3-wheel \
-  xz-utils file make gcc gcc-multilib g++-multilib libsdl2-dev zenity yad
+  xz-utils file make gcc gcc-multilib g++-multilib libsdl2-dev zenity yad \
+  gir1.2-gtk-4.0 gir1.2-adw-1
 
 
 # install the GN tool
