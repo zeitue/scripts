@@ -63,7 +63,7 @@ EOF
 
 sudo install ./jlink.png /usr/local/share/pixmaps
 
-for EXE in $(ls -1 /opt/JLink*/*Exe);do
+for EXE in $(ls -1 /opt/SEGGER/JLink/*Exe);do
 WMCLASS=$(basename $EXE)
 NAME=${WMCLASS::-3}
 cat <<EOF | sudo dd status=none of="/usr/local/share/applications/${WMCLASS}.desktop"
