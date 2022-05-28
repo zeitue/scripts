@@ -2,7 +2,7 @@
 
 echo "Installing Clojure"
 
-URL=$(curl https://clojure.org/guides/getting_started |\
+URL=$(curl https://clojure.org/guides/install_clojure |\
       grep "curl -O " |\
       sed 's/.*curl -O //')
 
