@@ -21,6 +21,7 @@ rm "./$FILENAME"
 sudo curl "https://avatars.githubusercontent.com/u/105069582?s=200&v=4" --output /usr/local/share/pixmaps/neoxa.png
 cat <<EOF | sudo dd status=none of=/usr/local/share/applications/neoxa.desktop
 [Desktop Entry]
+Version=1.0
 Name=Neoxa
 Exec=/usr/local/bin/neoxa-qt %U
 Terminal=false
