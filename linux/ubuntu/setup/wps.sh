@@ -8,7 +8,7 @@ PAGE=$(curl "https://www.wps.com/")
 LINKS=$(echo $PAGE |\
         grep -io '<link rel="preload" href=['"'"'"][^"'"'"']*['"'"'"]' |\
         sed -e 's/^<link rel="preload" href=["'"'"']//i' -e 's/["'"'"']$//i')
-JS=$(curl $JS)
+JS=$(curl $LINKS)
 URL=$(echo $JS |\
       tr ',' '\n' |\
       grep linux_deb\: |\
