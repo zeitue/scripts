@@ -6,6 +6,6 @@ PREVIOUS=$(pwd)
 mkdir tmp_bitwarden
 cd tmp_bitwarden
 curl -JLO "$URL"
-sudo apt install ./*.deb
+sudo apt install -y ./*.deb
 cd "$PREVIOUS"
 rm -Rf tmp_bitwarden
