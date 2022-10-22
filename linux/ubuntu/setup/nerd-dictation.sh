@@ -2,7 +2,7 @@
 
 echo "Installing Nerd Dictation"
 sudo apt install -y pulseaudio-utils sox xdotool ydotool ydotoold \
-    python3-virtualenv python3-venv
+    python3-virtualenv python3-venv libqt53dcore5
 
 sudo python3 -m venv /opt/nerd-dictation
 sudo chown -R $USER /opt/nerd-dictation
