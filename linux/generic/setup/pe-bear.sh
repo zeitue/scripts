@@ -20,7 +20,7 @@ URL=$(getLatest hasherezade/pe-bear 5_x64_linux.tar.xz)
 FILENAME=$(basename "$URL")
 wget -c "$URL"
 sudo install -d /opt/pe-bear/
-tar -xf "$FILENAME" -C /opt/pe-bear/
+sudo tar -xf "$FILENAME" -C /opt/pe-bear/
 rm "./$FILENAME"
 
 # Add desktop file
