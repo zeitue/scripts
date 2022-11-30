@@ -1,10 +1,13 @@
 #!/bin/bash
 
-export NRFCONNECT_URL=$(echo "https://www.nordicsemi.com`curl https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-desktop/Download#infotabs |\
-      grep AppImage | grep -o '>.*</span>' | sed 's/\(>\|<\/span>\)//g;s/|/\n/g' | sed -n '2 p'`")
+export NRFCONNECT_URL=$(
+curl https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-desktop/Download#infotabs |\
+        grep -i AppImage | grep -o '>.*</span>' |\
+        sed 's/\(>\|<\/span>\)//g;s/|/\n/g' |  grep http | sed -n '2 p'
+)
 
-export NRFCLI_URL=$(echo "https://www.nordicsemi.com`curl https://www.nordicsemi.com/Products/Development-tools/nrf-command-line-tools/download |\
-      grep -i Linux-amd64.zip | grep -o '>.*</span>' | sed 's/\(>\|<\/span>\)//g;s/|/\n/g' | sed -n '2 p'`")
+export NRFCLI_URL=$(curl https://www.nordicsemi.com/Products/Development-tools/nrf-command-line-tools/download |\
+      grep -i Linux-amd64.zip | grep -o '>.*</span>' | sed 's/\(>\|<\/span>\)//g;s/|/\n/g' | sed -n '2 p')
 
 export GNUARMEMB_URL="https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2"
 export SEGGER_URL="https://segger.com/downloads/embedded-studio/embeddedstudio_arm_nordic_linux_x64"
@@ -103,16 +106,8 @@ sudo chmod +x /opt/gn/gn
 sudo ln -s /opt/gn/gn /usr/local/bin/gn
 
 
-
-if [[ ! -d /Applications ]]; then
-  sudo mkdir /Applications
-  sudo chown root:root /Applications
-  sudo chmod 777 /Applications
-fi
-
-
-wget -c "$NRFCONNECT_URL" -P /Applications/
-chmod +x /Applications/nrfconnect-*-x86_64.AppImage
+wget -c "$NRFCONNECT_URL" -P "$HOME"
+chmod +x nrfconnect-*-x86_64.AppImage
 
 
 wget -c "$GNUARMEMB_URL"
@@ -401,4 +396,6 @@ Hidden=false
 NoDisplay=false
 StartupWMClass=nrf-connect-sdk-manager.py
 EOF
+
+echo "The nRf Connect app is in your home folder place it where you'd like"
 
