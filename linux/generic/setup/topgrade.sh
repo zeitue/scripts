@@ -14,7 +14,7 @@ for s in x['assets'] if s['name'].endswith('$SUFFIX')))"
 }
 
 echo "Installing Topgrade"
-URL=$(getLatest r-darwish/topgrade x86_64-unknown-linux-gnu.tar.gz)
+URL=$(getLatest topgrade-rs/topgrade x86_64-unknown-linux-gnu.tar.gz)
 FILENAME=$(basename "$URL")
 wget -c "$URL"
 sudo tar -xf "$FILENAME" -C /usr/local/bin
