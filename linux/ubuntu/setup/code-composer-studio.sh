@@ -10,7 +10,7 @@ URL=$(curl https://www.ti.com/tool/download/CCSTUDIO |\
       head -n1
 )
 
-sudo apt install -y libusb-0.1-4 python3
+sudo apt install -y libusb-0.1-4 python3 libc6-i386
 
 mkdir tmp
 PREVIOUS=$(pwd)
