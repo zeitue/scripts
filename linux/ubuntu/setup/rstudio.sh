@@ -1,11 +1,11 @@
 #!/bin/bash
-
+# TODO Fox
 echo "Installing RStudio"
 
 sudo apt install -y r-base build-essential
 
 URL=$(
-    curl "https://www.rstudio.com/products/rstudio/download/#download" |\
+    curl "https://posit.co/download/rstudio-desktop/" |\
     grep "amd64\.deb" |\
     sed -n 's:.*href="\(.*\)">.*:\1:p' |\
     cut -d\" -f1 |\
